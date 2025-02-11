@@ -1,35 +1,59 @@
-defmodule RequestBin.Request do
-  use Ecto.Schema
-  import Ecto.Changeset
+defmodule RequestBin.Requests do
+  @moduledoc """
+  The Requests context.
+  Provides functions for managing and interacting with Request records in the database.
+  """
 
-  @primary_key {:id, :binary_id, autogenerate: true}
-  @foreign_key_type :binary_id
-  schema "requests" do
-    field :path, :string
-    field :ip, :string
-    field :headers, :map
-    field :method, :string
-    field :body_raw, :string
-    field :body_parsed, :map
-    field :query_params, :map
-    belongs_to :bin, RequestBin.Bin
+  import Ecto.Query, warn: false
 
-    timestamps(type: :utc_datetime)
+  alias RequestBin.Repo
+  alias RequestBin.Bins.Request
+
+  @doc """
+  Returns the list of all requests.
+  """
+  def list_requests() do
+    Repo.all(Request)
   end
 
-  @doc false
-  def changeset(request, attrs) do
-    request
-    |> cast(attrs, [
-      :method,
-      :headers,
-      :body_raw,
-      :body_parsed,
-      :query_params,
-      :path,
-      :ip,
-      :bin_id
-    ])
-    |> validate_required([:method, :body_raw, :path, :ip, :bin_id])
+  @doc """
+  Gets a single request by id. Raises if the Request does not exist.
+  """
+  def get_request!(id), do: Repo.get!(Request, id)
+
+  @doc """
+  Gets a single request by id. Returns `nil` if the Request does not exist.
+  """
+  def get_request(id), do: Repo.get(Request, id)
+
+  @doc """
+  Creates a request with the given attributes.
+  """
+  def create_request(attrs \\ %{}) do
+    %Request{}
+    |> Request.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  @doc """
+  Updates a request with the given attributes.
+  """
+  def update_request(%Request{} = request, attrs) do
+    request |> Request.changeset(attrs) |> Repo.update()
+  end
+
+  @doc """
+  Deletes a Request.
+  """
+  def delete_request(%Request{} = request) do
+    Repo.delete(request)
+  end
+
+  @doc """
+  Returns an `%Ecto.Changeset{}` for tracking request changes.
+  """
+  def change_request(%Request{} = request, attrs \\ %{}) do
+    Request.changeset(request, attrs)
   end
 end
+
