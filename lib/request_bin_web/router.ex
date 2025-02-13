@@ -21,16 +21,17 @@ defmodule RequestBinWeb.Router do
   scope "/", RequestBinWeb do
     pipe_through :no_csrf_protection
 
-    get "/bin/:id", BinController, :show, as: :bin
-    post "/bin/:id", BinController, :create
-    put "/bin/:id", BinController, :update
-    patch "/bin/:id", BinController, :update
-    delete "/bin/:id", BinController, :delete
+    get "/bin/:id", BinController, :collect
+    post "/bin/:id", BinController, :collect
+    put "/bin/:id", BinController, :collect
+    patch "/bin/:id", BinController, :collect
+    delete "/bin/:id", BinController, :collect
   end
 
   scope "/", RequestBinWeb do
     pipe_through :browser
 
+    get "/", PageController, :home
     live "/bin", BinLive.Index, :home
     live "/bin/:id/inspect", BinLive.Inspect, :show
   end
