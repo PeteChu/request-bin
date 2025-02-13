@@ -14,10 +14,24 @@ defmodule RequestBinWeb.Router do
     plug :accepts, ["json"]
   end
 
+  pipeline :no_csrf_protection do
+    plug :accepts, ["json"]
+  end
+
+  scope "/", RequestBinWeb do
+    pipe_through :no_csrf_protection
+
+    get "/bin/:id", BinController, :show, as: :bin
+    post "/bin/:id", BinController, :create
+    put "/bin/:id", BinController, :update
+    patch "/bin/:id", BinController, :update
+    delete "/bin/:id", BinController, :delete
+  end
+
   scope "/", RequestBinWeb do
     pipe_through :browser
 
-    get "/", PageController, :home
+    live "/bin/:id/inspect", BinLive.Index, :inspect
   end
 
   # Other scopes may use custom stacks.

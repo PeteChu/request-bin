@@ -30,6 +30,6 @@ defmodule RequestBin.Bins.Request do
       :ip,
       :bin_id
     ])
-    |> validate_required([:method, :body_raw, :path, :ip, :bin_id])
+    |> validate_required([:method, :path, :ip, :bin_id])
   end
 end

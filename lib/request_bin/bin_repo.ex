@@ -1,4 +1,4 @@
-defmodule RequestBin.Bins do
+defmodule RequestBin.BinsRepo do
   @moduledoc """
   The Bins context.
   Handle all business logic related to request bins.
