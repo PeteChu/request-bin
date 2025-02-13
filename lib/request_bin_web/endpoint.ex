@@ -40,6 +40,8 @@ defmodule RequestBinWeb.Endpoint do
 
   plug Plug.RequestId
   plug Plug.Telemetry, event_prefix: [:phoenix, :endpoint]
+  plug RemoteIp
+  plug :rate_limit
 
   plug Plug.Parsers,
     parsers: [:urlencoded, :multipart, :json],
@@ -50,4 +52,23 @@ defmodule RequestBinWeb.Endpoint do
   plug Plug.Head
   plug Plug.Session, @session_options
   plug RequestBinWeb.Router
+
+  defp rate_limit(conn, _opts) do
+    key = "web_requests:#{:inet.ntoa(conn.remote_ip)}"
+    scale = :timer.minutes(1)
+    limit = 100
+
+    case RequestBin.RateLimit.hit(key, scale, limit) do
+      {:allow, _count} ->
+        conn
+
+      {:deny, retry_after} ->
+        retry_after_seconds = div(retry_after, 1000)
+
+        conn
+        |> put_resp_header("retry-after", Integer.to_string(retry_after_seconds))
+        |> send_resp(429, [])
+        |> halt()
+    end
+  end
 end

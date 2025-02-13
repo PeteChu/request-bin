@@ -14,6 +14,7 @@ defmodule RequestBin.Application do
       RequestBin.Repo,
       {DNSCluster, query: Application.get_env(:request_bin, :dns_cluster_query) || :ignore},
       {Oban, Application.fetch_env!(:request_bin, Oban)},
+      RequestBin.RateLimit,
       {Phoenix.PubSub, name: RequestBin.PubSub},
       # Start the Finch HTTP client for sending emails
       {Finch, name: RequestBin.Finch},
