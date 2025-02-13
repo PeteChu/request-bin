@@ -16,6 +16,10 @@ defmodule RequestBin.RequestsRepo do
     Repo.all(Request)
   end
 
+  def list_requests_by_bin(bin_id) do
+    from(r in Request, where: r.bin_id == ^bin_id) |> Repo.all()
+  end
+
   @doc """
   Gets a single request by id. Raises if the Request does not exist.
   """
@@ -30,9 +34,24 @@ defmodule RequestBin.RequestsRepo do
   Creates a request with the given attributes.
   """
   def create_request(attrs \\ %{}) do
-    %Request{}
-    |> Request.changeset(attrs)
-    |> Repo.insert()
+    result =
+      %Request{}
+      |> Request.changeset(attrs)
+      |> Repo.insert()
+
+    case result do
+      {:ok, request} ->
+        Phoenix.PubSub.broadcast(
+          RequestBin.PubSub,
+          "bin:#{request.bin_id}",
+          {:new_request, request}
+        )
+
+        result
+
+      _ ->
+        result
+    end
   end
 
   @doc """

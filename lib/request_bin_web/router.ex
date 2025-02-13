@@ -31,7 +31,8 @@ defmodule RequestBinWeb.Router do
   scope "/", RequestBinWeb do
     pipe_through :browser
 
-    live "/bin/:id/inspect", BinLive.Index, :inspect
+    live "/bin", BinLive.Index, :home
+    live "/bin/:id/inspect", BinLive.Inspect, :show
   end
 
   # Other scopes may use custom stacks.
