@@ -36,24 +36,9 @@ defmodule RequestBin.RequestsRepo do
   Creates a request with the given attributes.
   """
   def create_request(attrs \\ %{}) do
-    result =
-      %Request{}
-      |> Request.changeset(attrs)
-      |> Repo.insert()
-
-    case result do
-      {:ok, request} ->
-        Phoenix.PubSub.broadcast(
-          RequestBin.PubSub,
-          "bin:#{request.bin_id}",
-          {:new_request, request}
-        )
-
-        result
-
-      _ ->
-        result
-    end
+    %Request{}
+    |> Request.changeset(attrs)
+    |> Repo.insert()
   end
 
   @doc """

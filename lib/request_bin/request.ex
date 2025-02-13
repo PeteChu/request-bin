@@ -60,41 +60,8 @@ defmodule RequestBin.Requests do
   end
 
   def process_request(request_info, params) do
-    with {:ok, bin_id} <- Map.fetch(params, "id"), {:ok, bin} <- get_bin(bin_id) do
-      # Ensure body_raw is converted to string or set to empty string if nil
-      formatted_body_raw =
-        case request_info.body_raw do
-          nil -> ""
-          body when is_binary(body) -> body
-          body -> inspect(body)
-        end
-
-      # Ensure body_parsed is properly formatted for storage
-      formatted_body_parsed =
-        case request_info.body do
-          body when is_map(body) ->
-            body
-
-          body when is_binary(body) and body != "" ->
-            case Jason.decode(body) do
-              {:ok, parsed} -> parsed
-              _ -> %{"raw" => body}
-            end
-
-          _ ->
-            %{}
-        end
-
-      RequestsRepo.create_request(%{
-        path: request_info.path,
-        ip: request_info.remote_ip,
-        headers: request_info.headers,
-        method: request_info.method,
-        body_raw: formatted_body_raw,
-        body_parsed: formatted_body_parsed,
-        query_params: request_info.query_params,
-        bin_id: bin.id
-      })
+    with {:ok, bin_id} <- Map.fetch(params, "id"), {:ok, _bin} <- get_bin(bin_id) do
+      create_request(bin_id, request_info)
     else
       :error ->
         {:error, :invalid_params}
@@ -142,5 +109,56 @@ defmodule RequestBin.Requests do
 
   def delete_for_bin(bin_id) do
     from(r in Request, where: r.bin_id == ^bin_id) |> Repo.delete_all()
+  end
+
+  def create_request(bin_id, request_info) do
+    formatted_body_raw =
+      case request_info.body_raw do
+        nil -> ""
+        body when is_binary(body) -> body
+        body -> inspect(body)
+      end
+
+    # Ensure body_parsed is properly formatted for storage
+    formatted_body_parsed =
+      case request_info.body do
+        body when is_map(body) ->
+          body
+
+        body when is_binary(body) and body != "" ->
+          case Jason.decode(body) do
+            {:ok, parsed} -> parsed
+            _ -> %{"raw" => body}
+          end
+
+        _ ->
+          %{}
+      end
+
+    result =
+      RequestsRepo.create_request(%{
+        path: request_info.path,
+        ip: request_info.remote_ip,
+        headers: request_info.headers,
+        method: request_info.method,
+        body_raw: formatted_body_raw,
+        body_parsed: formatted_body_parsed,
+        query_params: request_info.query_params,
+        bin_id: bin_id
+      })
+
+    case result do
+      {:ok, request} ->
+        Phoenix.PubSub.broadcast(
+          RequestBin.PubSub,
+          "bin:#{request.bin_id}",
+          {:new_request, request}
+        )
+
+        result
+
+      _ ->
+        result
+    end
   end
 end
