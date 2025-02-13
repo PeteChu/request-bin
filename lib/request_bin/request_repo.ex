@@ -17,7 +17,9 @@ defmodule RequestBin.RequestsRepo do
   end
 
   def list_requests_by_bin(bin_id) do
-    from(r in Request, where: r.bin_id == ^bin_id) |> Repo.all()
+    from(r in Request, where: r.bin_id == ^bin_id)
+    |> order_by({:desc, :inserted_at})
+    |> Repo.all()
   end
 
   @doc """
