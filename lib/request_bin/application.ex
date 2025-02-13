@@ -7,10 +7,13 @@ defmodule RequestBin.Application do
 
   @impl true
   def start(_type, _args) do
+    Oban.Telemetry.attach_default_logger()
+
     children = [
       RequestBinWeb.Telemetry,
       RequestBin.Repo,
       {DNSCluster, query: Application.get_env(:request_bin, :dns_cluster_query) || :ignore},
+      {Oban, Application.fetch_env!(:request_bin, Oban)},
       {Phoenix.PubSub, name: RequestBin.PubSub},
       # Start the Finch HTTP client for sending emails
       {Finch, name: RequestBin.Finch},

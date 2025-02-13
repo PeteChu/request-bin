@@ -1,7 +1,7 @@
 defmodule RequestBin.BinsRepo do
   @moduledoc """
-  The Bins context.
-  Handle all business logic related to request bins.
+  The Bins repository.
+  Handle all CRUD logic related to request bins.
   """
 
   import Ecto.Query, warn: false

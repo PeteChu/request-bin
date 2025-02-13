@@ -1,4 +1,8 @@
 defmodule RequestBin.Requests do
+  import Ecto.Query
+
+  alias RequestBin.Repo
+  alias RequestBin.Bins.Request
   alias RequestBin.RequestsRepo
   alias RequestBin.BinsRepo
 
@@ -112,5 +116,9 @@ defmodule RequestBin.Requests do
       nil -> {:error, :not_found}
       bin -> {:ok, bin}
     end
+  end
+
+  def delete_for_bin(bin_id) do
+    from(r in Request, where: r.bin_id == ^bin_id) |> Repo.delete_all()
   end
 end

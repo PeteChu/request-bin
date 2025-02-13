@@ -5,7 +5,8 @@ defmodule RequestBin.Bins.Bin do
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
   schema "bins" do
-    field :retention_period, :integer, default: 7
+    # retention_period (days)
+    field :retention_period, :integer, default: 2
 
     has_many :requests, RequestBin.Bins.Request
 

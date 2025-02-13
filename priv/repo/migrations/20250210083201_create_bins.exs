@@ -5,12 +5,15 @@ defmodule RequestBin.Repo.Migrations.CreateBins do
     create table(:bins, primary_key: false) do
       add :id, :binary_id, primary_key: true
 
+      # retention_period (days)
       add :retention_period, :integer,
-        default: 7,
+        default: 2,
         null: false
 
       timestamps(type: :utc_datetime)
     end
+
+    create index(:bins, [:id])
 
     create constraint(:bins, :retention_period_must_be_positive, check: "retention_period > 0")
 

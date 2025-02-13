@@ -1,4 +1,5 @@
 import Config
+config :request_bin, Oban, testing: :manual
 
 # Configure your database
 #
