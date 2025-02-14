@@ -6,20 +6,16 @@ defmodule RequestBinWeb.BinLive.Inspect do
 
   @impl true
   def mount(%{"id" => bin_id}, _session, socket) do
-    hostname = URI.parse(socket.host_uri).host
-    port = if Mix.env() == :dev, do: ":#{socket.host_uri.port}", else: ""
-    bin_url = "http://#{hostname}#{port}/bin/#{bin_id}"
-
     if connected?(socket) do
       Phoenix.PubSub.subscribe(RequestBin.PubSub, "bin:#{bin_id}")
     end
 
-    requests = RequestsRepo.list_requests_by_bin(bin_id)
+    hostname = URI.parse(socket.host_uri).host
 
     socket =
       socket
-      |> assign(bin_url: bin_url)
-      |> assign(requests: requests)
+      |> assign(bin_url: "https://#{hostname}/bin/#{bin_id}")
+      |> assign(requests: RequestsRepo.list_requests_by_bin(bin_id))
       |> assign(bin_id: bin_id)
 
     {:ok, socket}
