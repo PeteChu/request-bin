@@ -50,9 +50,10 @@ defmodule RequestBinWeb.BinLive.Index do
       </div>
 
       <div
-        class="fixed top-14 right-0 w-80 p-6 bg-white overflow-y-auto"
+        class="fixed top-14 right-0 w-80 h-[calc(100%-4rem)] p-6 bg-white overflow-y-auto transform transition-transform xl:translate-x-0 translate-x-full"
         id="bins-list"
         phx-hook="Bins"
+        phx-class-toggle="translate-x-0"
       >
         <h2 class="text-xl font-semibold mb-4">Recent bins</h2>
         <div class="space-y-2">
