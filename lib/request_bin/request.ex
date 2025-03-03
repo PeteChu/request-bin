@@ -50,7 +50,7 @@ defmodule RequestBin.Requests do
       method: method,
       path: request_path,
       query_params: query_params,
-      remote_ip: get_client_ip(req_headers, remote_ip),
+      remote_ip: format_ip(remote_ip),
       headers: headers,
       body: parsed_body,
       body_raw: raw_body
@@ -73,27 +73,6 @@ defmodule RequestBin.Requests do
 
   defp format_ip(ip) when is_tuple(ip), do: :inet.ntoa(ip) |> to_string()
   defp format_ip(ip) when is_binary(ip), do: ip
-
-  defp get_client_ip(headers, remote_ip) do
-    headers
-    |> Enum.into(%{})
-    |> Map.get("x-forwarded-for", nil)
-    |> case do
-      nil ->
-        # Try X-Real-IP header
-        case Enum.into(headers, %{}) |> Map.get("x-real-ip") do
-          nil -> format_ip(remote_ip)
-          real_ip -> real_ip
-        end
-
-      forwarded_ips ->
-        # Get the first IP in X-Forwarded-For chain
-        forwarded_ips
-        |> String.split(",")
-        |> List.first()
-        |> String.trim()
-    end
-  end
 
   defp format_headers(headers) do
     headers
