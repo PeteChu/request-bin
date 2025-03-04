@@ -4,16 +4,8 @@ defmodule RequestBin.Utils.StringUtil do
     # Split the string into words
     |> String.split("-")
     # Capitalize each word
-    |> Enum.map(&capitalize/1)
+    |> Enum.map(&String.capitalize/1)
     # Join with hyphens for kebab case
     |> Enum.join("-")
-  end
-
-  defp capitalize(word) do
-    word
-    # Ensure it's lowercase
-    |> String.downcase()
-    # Capitalize the first letter
-    |> String.capitalize()
   end
 end

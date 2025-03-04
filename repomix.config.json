@@ -21,7 +21,13 @@
       "rel/",
       "repomix.config.json",
       ".github/",
-      "assets/"
+      "assets/",
+      "test/",
+      ".repomixignore",
+      ".pre-commit-config.yaml",
+      "fly.toml",
+      ".dockerignore",
+      "Dockerfile"
     ]
   },
   "security": {
