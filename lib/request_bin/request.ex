@@ -19,7 +19,11 @@ defmodule RequestBin.Requests do
           request_path: request_path
         } = conn
       ) do
-    headers = format_headers(req_headers)
+    headers =
+      format_headers(req_headers)
+      |> Map.filter(fn {key, _value} ->
+        !String.starts_with?(key, "fly-")
+      end)
 
     # Read raw body first
     {:ok, raw_body, _conn} = Plug.Conn.read_body(conn)
