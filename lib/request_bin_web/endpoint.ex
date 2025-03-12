@@ -40,7 +40,10 @@ defmodule RequestBinWeb.Endpoint do
 
   plug Plug.RequestId
   plug Plug.Telemetry, event_prefix: [:phoenix, :endpoint]
-  plug RemoteIp
+
+  plug RemoteIp,
+    headers: ~w"fly-client-ip"
+
   plug :rate_limit
 
   plug Plug.Parsers,
