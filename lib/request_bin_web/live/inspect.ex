@@ -28,9 +28,11 @@ defmodule RequestBinWeb.BinLive.Inspect do
       <div class="w-full mt-6">
         <h1 class="text-xl font-bold mb-4 text-gray-800">Bin Inspector</h1>
         <input
+          id="copy-input"
           class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
           type="text"
           value={@bin_url}
+          phx-hook="CopyOnFocus"
           readonly
         />
       </div>
@@ -91,6 +93,15 @@ defmodule RequestBinWeb.BinLive.Inspect do
   def handle_info({:new_request, request}, socket) do
     updated_requests = [request | socket.assigns.requests]
     {:noreply, assign(socket, :requests, updated_requests)}
+  end
+
+  @impl true
+  def handle_event("copied_url", _params, socket) do
+    socket =
+      socket
+      |> put_flash(:info, "Bin url copied!")
+
+    {:noreply, socket}
   end
 
   def format_time_ago(diff) do
