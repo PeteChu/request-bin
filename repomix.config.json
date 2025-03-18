@@ -27,7 +27,8 @@
       ".pre-commit-config.yaml",
       "fly.toml",
       ".dockerignore",
-      "Dockerfile"
+      "Dockerfile",
+      "README.md"
     ]
   },
   "security": {

@@ -1,16 +1,22 @@
 defmodule RequestBinWeb.BinLive.Index do
   use RequestBinWeb, :live_view
+  import RequestBinWeb.IndexLive.RecentBin
 
   alias RequestBin.Bins
 
   def mount(_params, _session, socket) do
-    {:ok, assign(socket, bins: [])}
+    {:ok, assign(socket, bins: [], show_sidebar: false)}
   end
 
   def render(assigns) do
     ~H"""
-    <div class="relative min-h-[calc(100%-3rem)]">
-      <div class="flex flex-col items-center space-y-6 p-6 max-w-4xl mx-auto">
+    <div class="flex">
+      <div class={[
+        "mx-auto",
+        "w-full min-h-[calc(100vh-3rem)] p-6 max-w-4xl",
+        "space-y-6",
+        "flex flex-1 flex-col items-center"
+      ]}>
         <h1 class="text-4xl font-bold text-center text-gray-800">Request Bin</h1>
         <p class="text-lg text-center text-gray-600 max-w-2xl">
           Request Bin is your go-to tool for debugging and inspecting HTTP requests. Perfect for testing webhooks,
@@ -26,11 +32,15 @@ defmodule RequestBinWeb.BinLive.Index do
           </div>
           <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
             <h3 class="font-semibold text-gray-800 mb-2">🔍 Real-time Inspection</h3>
-            <p class="text-gray-600">View request headers, body, and query parameters in real-time</p>
+            <p class="text-gray-600">
+              View request headers, body, and query parameters in real-time
+            </p>
           </div>
           <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
             <h3 class="font-semibold text-gray-800 mb-2">🔒 Secure</h3>
-            <p class="text-gray-600">Each bin has a unique URL and auto-expires for your security</p>
+            <p class="text-gray-600">
+              Each bin has a unique URL and auto-expires for your security
+            </p>
           </div>
           <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
             <h3 class="font-semibold text-gray-800 mb-2">💡 Developer Friendly</h3>
@@ -50,26 +60,18 @@ defmodule RequestBinWeb.BinLive.Index do
       </div>
 
       <div
-        class="fixed top-14 right-0 w-80 h-[calc(100%-4rem)] p-6 bg-white overflow-y-auto transform transition-transform xl:translate-x-0 translate-x-full"
+        class={[
+          "w-64 h-[100vh-4rem] p-6",
+          "bg-white border-l border-gray-200 shadow-sm",
+          "overflow-auto",
+          "transition-all translate-x-full md:translate-x-0",
+          if(@show_sidebar, do: "hidden md:block", else: "!hidden")
+        ]}
         id="bins-list"
         phx-hook="Bins"
-        phx-class-toggle="translate-x-0"
+        phx-class-toggle="translate-x-0 hidden lg:block"
       >
-        <h2 class="text-xl font-semibold mb-4">Recent bins</h2>
-        <div class="space-y-2">
-          <%= for bin <- @bins do %>
-            <div class="block">
-              <a href={~p"/bin/#{bin["id"]}/inspect"}>
-                <div class="text-sm text-blue-600 underline">
-                  {String.slice(bin["id"], 0..7)}
-                </div>
-              </a>
-              <div id="local-expires-at" class="text-xs text-gray-500" phx-hook="LocalTime">
-                Expires: <span data-expires-at={bin["expires_at"]}></span>
-              </div>
-            </div>
-          <% end %>
-        </div>
+        <.recent_bin bins={@bins} />
       </div>
     </div>
     """
@@ -89,6 +91,6 @@ defmodule RequestBinWeb.BinLive.Index do
   end
 
   def handle_event("load_bins", %{"bins" => bins}, socket) do
-    {:noreply, assign(socket, bins: bins)}
+    {:noreply, assign(socket, bins: bins, show_sidebar: length(bins) > 0)}
   end
 end
