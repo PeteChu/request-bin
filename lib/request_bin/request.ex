@@ -22,7 +22,9 @@ defmodule RequestBin.Requests do
     headers =
       format_headers(req_headers)
       |> Map.filter(fn {key, _value} ->
-        !String.starts_with?(key, "fly-")
+        !String.starts_with?(key, "fly-") ||
+          !String.starts_with?(key, "x-") ||
+          key != "via"
       end)
 
     # Read raw body first
