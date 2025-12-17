@@ -9,7 +9,7 @@ import Config
 
 config :request_bin, Oban,
   engine: Oban.Engines.Basic,
-  notifier: Oban.Notifiers.Postgres,
+  notifier: Oban.Notifiers.PG,
   queues: [default: 10],
   repo: RequestBin.Repo
 
