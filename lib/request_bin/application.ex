@@ -12,7 +12,6 @@ defmodule RequestBin.Application do
     children = [
       RequestBinWeb.Telemetry,
       RequestBin.Repo,
-      {DNSCluster, query: Application.get_env(:request_bin, :dns_cluster_query) || :ignore},
       {Oban, Application.fetch_env!(:request_bin, Oban)},
       RequestBin.RateLimit,
       {Phoenix.PubSub, name: RequestBin.PubSub},
