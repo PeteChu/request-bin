@@ -25,7 +25,6 @@
       "test/",
       ".repomixignore",
       ".pre-commit-config.yaml",
-      "fly.toml",
       ".dockerignore",
       "Dockerfile",
       "README.md"
