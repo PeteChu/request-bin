@@ -24,6 +24,7 @@ defmodule RequestBin.DataCase do
       import Ecto.Changeset
       import Ecto.Query
       import RequestBin.DataCase
+      import RequestBin.Fixtures
     end
   end
 
