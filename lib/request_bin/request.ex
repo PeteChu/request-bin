@@ -6,8 +6,6 @@ defmodule RequestBin.Requests do
   alias RequestBin.RequestsRepo
   alias RequestBin.BinsRepo
 
-  require Logger
-
   def extract_request_info(
         %Plug.Conn{
           body_params: body_params,

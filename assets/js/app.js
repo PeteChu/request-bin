@@ -14,24 +14,28 @@
 //
 //     import "some-package"
 //
+// If dependencies import CSS, esbuild emits a separate CSS bundle. Add it to
+// root.html.heex if one is introduced.
 
 // Include phoenix_html to handle method=PUT/DELETE in forms and buttons.
 import "phoenix_html";
 // Establish Phoenix Socket and LiveView configuration.
 import { Socket } from "phoenix";
 import { LiveSocket } from "phoenix_live_view";
+import { hooks as colocatedHooks } from "phoenix-colocated/request_bin";
 import topbar from "../vendor/topbar";
 import Bins from "./hooks/bins";
 import LocalTime from "./hooks/local_time";
 import CopyOnFocus from "./hooks/copy-on-focus";
 
-let csrfToken = document
+const csrfToken = document
   .querySelector("meta[name='csrf-token']")
   .getAttribute("content");
-let liveSocket = new LiveSocket("/live", Socket, {
+const liveSocket = new LiveSocket("/live", Socket, {
   longPollFallbackMs: 2500,
   params: { _csrf_token: csrfToken },
   hooks: {
+    ...colocatedHooks,
     Bins,
     LocalTime,
     CopyOnFocus,
@@ -51,3 +55,35 @@ liveSocket.connect();
 // >> liveSocket.enableLatencySim(1000)  // enabled for duration of browser session
 // >> liveSocket.disableLatencySim()
 window.liveSocket = liveSocket;
+
+// Enable quality-of-life Phoenix LiveReload development features: browser
+// console server logs and click-to-open HEEx source locations.
+if (process.env.NODE_ENV === "development") {
+  window.addEventListener(
+    "phx:live_reload:attached",
+    ({ detail: reloader }) => {
+      reloader.enableServerLogs();
+
+      let keyDown;
+      window.addEventListener("keydown", (event) => (keyDown = event.key));
+      window.addEventListener("keyup", () => (keyDown = null));
+      window.addEventListener(
+        "click",
+        (event) => {
+          if (keyDown === "c") {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            reloader.openEditorAtCaller(event.target);
+          } else if (keyDown === "d") {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            reloader.openEditorAtDef(event.target);
+          }
+        },
+        true,
+      );
+
+      window.liveReloader = reloader;
+    },
+  );
+}

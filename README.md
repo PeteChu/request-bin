@@ -19,6 +19,9 @@ RequestBin is composed of several key components:
 
 ## Setup Instructions
 
+RequestBin targets Elixir 1.17 or later and Erlang/OTP 25 or later.
+PostgreSQL is required for local development and tests.
+
 Follow these steps to get RequestBin up and running on your local machine:
 
 1. **Clone the Repository**
@@ -28,7 +31,18 @@ Follow these steps to get RequestBin up and running on your local machine:
    cd <repository_directory>
    ```
 
-2. **Install Dependencies**
+2. **Start PostgreSQL**
+
+   Start the included PostgreSQL service with Docker Compose:
+
+   ```bash
+   docker compose up -d postgres
+   ```
+
+   The database is exposed on port `5432` by default. To use another host port,
+   set `POSTGRES_PORT` for both Docker Compose and Mix commands.
+
+3. **Install Dependencies**
 
    Fetch both Elixir and JavaScript dependencies:
 
@@ -36,7 +50,7 @@ Follow these steps to get RequestBin up and running on your local machine:
    mix deps.get
    ```
 
-3. **Set Up the Database**
+4. **Set Up the Database**
 
    Create and migrate the database:
 
@@ -45,7 +59,7 @@ Follow these steps to get RequestBin up and running on your local machine:
    mix ecto.migrate
    ```
 
-4. **Install Frontend Assets**
+5. **Install Frontend Assets**
 
    RequestBin uses esbuild and Tailwind for asset management. Install these dependencies if they aren’t already set up:
 
@@ -53,7 +67,7 @@ Follow these steps to get RequestBin up and running on your local machine:
    mix assets.setup
    ```
 
-5. **Start the Phoenix Server**
+6. **Start the Phoenix Server**
 
    Start your application with:
 
@@ -67,7 +81,7 @@ Follow these steps to get RequestBin up and running on your local machine:
    iex -S mix phx.server
    ```
 
-6. **Access the Application**
+7. **Access the Application**
 
    Visit [http://localhost:4000](http://localhost:4000) in your browser to see the application in action.
 
@@ -135,7 +149,7 @@ For more detailed information about configuration or deployment, refer to the Ph
 
 ## Learn More
 
-- [Phoenix Framework Documentation](https://hexdocs.pm/phoenix/overview.html)
+- [Phoenix Framework Documentation](https://phoenix.hexdocs.pm/overview.html)
 - [Elixir Official Website](https://elixir-lang.org)
 - [Oban Documentation](https://hexdocs.pm/oban)
 - [Hammer Rate Limiter Docs](https://hexdocs.pm/hammer)

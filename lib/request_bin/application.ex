@@ -1,5 +1,5 @@
 defmodule RequestBin.Application do
-  # See https://hexdocs.pm/elixir/Application.html
+  # See https://elixir.hexdocs.pm/Application.html
   # for more information on OTP Applications
   @moduledoc false
 
@@ -15,15 +15,13 @@ defmodule RequestBin.Application do
       {Oban, Application.fetch_env!(:request_bin, Oban)},
       RequestBin.RateLimit,
       {Phoenix.PubSub, name: RequestBin.PubSub},
-      # Start the Finch HTTP client for sending emails
-      {Finch, name: RequestBin.Finch},
       # Start a worker by calling: RequestBin.Worker.start_link(arg)
       # {RequestBin.Worker, arg},
       # Start to serve requests, typically the last entry
       RequestBinWeb.Endpoint
     ]
 
-    # See https://hexdocs.pm/elixir/Supervisor.html
+    # See https://elixir.hexdocs.pm/Supervisor.html
     # for other strategies and supported options
     opts = [strategy: :one_for_one, name: RequestBin.Supervisor]
     Supervisor.start_link(children, opts)

@@ -9,8 +9,20 @@ config :request_bin, RequestBinWeb.Endpoint,
   check_origin: ["//*.petechu.dev"],
   cache_static_manifest: "priv/static/cache_manifest.json"
 
-# Configures Swoosh API Client
-config :swoosh, api_client: Swoosh.ApiClient.Finch, finch_name: RequestBin.Finch
+# Force using SSL in production. This also sets the "strict-transport-security" header,
+# known as HSTS. If you have a health check endpoint, you may want to exclude it below.
+# Note `:force_ssl` is required to be set at compile-time.
+config :request_bin, RequestBinWeb.Endpoint,
+  force_ssl: [
+    rewrite_on: [:x_forwarded_proto],
+    exclude: [
+      # paths: ["/health"],
+      hosts: ["localhost", "127.0.0.1"]
+    ]
+  ]
+
+# Configure Swoosh API Client
+config :swoosh, api_client: Swoosh.ApiClient.Req
 
 # Disable Swoosh Local Memory Storage
 config :swoosh, local: false

@@ -10,6 +10,7 @@ config :request_bin, RequestBin.Repo,
   username: "postgres",
   password: "postgres",
   hostname: "localhost",
+  port: String.to_integer(System.get_env("POSTGRES_PORT", "5432")),
   database: "request_bin_test#{System.get_env("MIX_TEST_PARTITION")}",
   pool: Ecto.Adapters.SQL.Sandbox,
   pool_size: System.schedulers_online() * 2
@@ -18,7 +19,7 @@ config :request_bin, RequestBin.Repo,
 # you can enable the server option below.
 config :request_bin, RequestBinWeb.Endpoint,
   http: [ip: {127, 0, 0, 1}, port: 4002],
-  secret_key_base: "eTxfyilaDizQjSpRWx5b16aANnQI3K7ful2weiXEGSk3n9/qT3WhpzNJ1JQTUSQb",
+  secret_key_base: String.duplicate("test_secret_key_base_", 4),
   server: false
 
 # In test we don't send emails
@@ -36,3 +37,7 @@ config :phoenix, :plug_init_mode, :runtime
 # Enable helpful, but potentially expensive runtime checks
 config :phoenix_live_view,
   enable_expensive_runtime_checks: true
+
+# Sort query params output of verified routes for robust URL comparisons
+config :phoenix,
+  sort_verified_routes_query_params: true
