@@ -16,6 +16,7 @@ defmodule RequestBinWeb.Router do
 
   pipeline :no_csrf_protection do
     plug :accepts, ["json"]
+    plug RequestBinWeb.Plugs.RateLimit
   end
 
   scope "/", RequestBinWeb do

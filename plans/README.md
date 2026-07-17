@@ -21,7 +21,7 @@ advisor modified only files under `plans/`.
 | --------------------------------------------------- | ---------------------------------------------------------- | -------: | -----: | ---------- | ------------------------------------------ |
 | [001](001-patch-http-dependencies.md)               | Patch the public HTTP stack to non-vulnerable versions     |       P1 |      S | —          | REJECTED: fixed independently by `024bc84` |
 | [002](002-establish-verification-baseline.md)       | Establish a green, portable test and CI baseline           |       P1 |      M | —          | DONE                                       |
-| [003](003-trust-client-ip-and-scope-rate-limits.md) | Trust forwarded client IPs only from configured proxies    |       P1 |      M | 002        | TODO                                       |
+| [003](003-trust-client-ip-and-scope-rate-limits.md) | Trust forwarded client IPs only from configured proxies    |       P1 |      M | 002        | DONE                                       |
 | [004](004-preserve-original-collected-requests.md)  | Preserve original request bodies, methods, and media types |       P1 |      M | 003        | TODO                                       |
 | [005](005-make-bin-expiration-atomic.md)            | Make bin expiration consistent, atomic, and idempotent     |       P1 |      M | 004        | TODO                                       |
 

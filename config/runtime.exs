@@ -23,6 +23,22 @@ end
 config :request_bin, RequestBinWeb.Endpoint,
   http: [port: String.to_integer(System.get_env("PORT", "4000"))]
 
+client_ip_header =
+  case System.get_env("CLIENT_IP_HEADER") do
+    nil -> nil
+    value -> if String.trim(value) == "", do: nil, else: String.trim(value)
+  end
+
+trusted_proxy_cidrs =
+  System.get_env("TRUSTED_PROXY_CIDRS", "")
+  |> String.split(",", trim: true)
+  |> Enum.map(&String.trim/1)
+  |> Enum.reject(&(&1 == ""))
+
+config :request_bin, :client_ip,
+  header: client_ip_header,
+  trusted_proxy_cidrs: trusted_proxy_cidrs
+
 if config_env() == :dev do
   # Reload browser tabs when matching files change.
   config :request_bin, RequestBinWeb.Endpoint,

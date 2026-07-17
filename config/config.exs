@@ -17,6 +17,14 @@ config :request_bin,
   ecto_repos: [RequestBin.Repo],
   generators: [timestamp_type: :utc_datetime]
 
+config :request_bin, :client_ip,
+  header: nil,
+  trusted_proxy_cidrs: []
+
+config :request_bin, :collector_rate_limit,
+  scale_ms: 60_000,
+  limit: 100
+
 # Configure the endpoint
 config :request_bin, RequestBinWeb.Endpoint,
   url: [host: "localhost"],
