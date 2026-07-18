@@ -1,5 +1,6 @@
 defmodule RequestBinWeb.BinController do
   use RequestBinWeb, :controller
+
   alias RequestBin.Requests
 
   def collect(conn, params), do: handle_request(conn, params)
@@ -7,13 +8,22 @@ defmodule RequestBinWeb.BinController do
   defp handle_request(conn, params) do
     case extract_process_request(conn, params) do
       {:ok, _bin_id} ->
-        send_success_response(conn)
+        send_response(conn, :ok, "ok")
 
       {:error, :bin_not_found} ->
-        send_error_response(conn, :not_found, "bin not found")
+        send_response(conn, :not_found, "bin not found")
 
-      {:error, error} ->
-        send_error_response(conn, :unprocessable_entity, error)
+      {:error, :invalid_params} ->
+        send_response(conn, :bad_request, "invalid request parameters")
+
+      {:error, :body_not_captured} ->
+        send_response(conn, :unprocessable_entity, "request body was not captured")
+
+      {:error, %Ecto.Changeset{}} ->
+        send_response(conn, :unprocessable_entity, "request could not be stored")
+
+      {:error, _error} ->
+        send_response(conn, :unprocessable_entity, "request could not be processed")
     end
   end
 
@@ -24,15 +34,9 @@ defmodule RequestBinWeb.BinController do
     end
   end
 
-  defp send_success_response(conn) do
-    conn
-    |> put_status(:ok)
-    |> html("ok")
-  end
-
-  defp send_error_response(conn, status, message) do
+  defp send_response(conn, status, message) do
     conn
     |> put_status(status)
-    |> html(message)
+    |> text(message)
   end
 end

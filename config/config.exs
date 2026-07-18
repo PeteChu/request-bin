@@ -25,6 +25,8 @@ config :request_bin, :collector_rate_limit,
   scale_ms: 60_000,
   limit: 100
 
+config :request_bin, :request_capture, max_body_bytes: 8_000_000
+
 # Configure the endpoint
 config :request_bin, RequestBinWeb.Endpoint,
   url: [host: "localhost"],

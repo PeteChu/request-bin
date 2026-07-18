@@ -14,13 +14,12 @@ defmodule RequestBinWeb.Router do
     plug :accepts, ["json"]
   end
 
-  pipeline :no_csrf_protection do
-    plug :accepts, ["json"]
+  pipeline :collector do
     plug RequestBinWeb.Plugs.RateLimit
   end
 
   scope "/", RequestBinWeb do
-    pipe_through :no_csrf_protection
+    pipe_through :collector
 
     get "/bin/:id", BinController, :collect
     post "/bin/:id", BinController, :collect

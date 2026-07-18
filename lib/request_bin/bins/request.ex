@@ -9,7 +9,7 @@ defmodule RequestBin.Bins.Request do
     field :ip, :string
     field :headers, :map
     field :method, :string
-    field :body_raw, :string
+    field :body_raw, :binary
     field :body_parsed, :map
     field :query_params, :map
     belongs_to :bin, RequestBin.Bins.Bin

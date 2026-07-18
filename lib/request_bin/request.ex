@@ -6,61 +6,52 @@ defmodule RequestBin.Requests do
   alias RequestBin.RequestsRepo
   alias RequestBin.BinsRepo
 
+  @type request_info :: %{
+          host: String.t(),
+          method: String.t(),
+          path: String.t(),
+          query_params: map(),
+          remote_ip: String.t(),
+          headers: map(),
+          body_raw: binary(),
+          body_parsed: map()
+        }
+
+  @spec extract_request_info(Plug.Conn.t()) ::
+          {:ok, request_info()} | {:error, :body_not_captured}
   def extract_request_info(
         %Plug.Conn{
-          body_params: body_params,
           query_params: query_params,
           host: host,
-          method: method,
           remote_ip: remote_ip,
           req_headers: req_headers,
           request_path: request_path
         } = conn
       ) do
-    headers =
-      format_headers(req_headers)
-      |> Map.filter(fn {key, _value} ->
-        !String.starts_with?(key, "fly-") ||
-          !String.starts_with?(key, "x-") ||
-          key != "via"
-      end)
+    with {:ok, raw_body} <- Map.fetch(conn.private, :request_bin_raw_body) do
+      headers =
+        format_headers(req_headers)
+        |> Map.filter(fn {key, _value} ->
+          !String.starts_with?(key, "fly-") ||
+            !String.starts_with?(key, "x-") ||
+            key != "via"
+        end)
 
-    # Read raw body first
-    {:ok, raw_body, _conn} = Plug.Conn.read_body(conn)
+      request_info = %{
+        host: host,
+        method: Map.get(conn.private, :request_bin_original_method, conn.method),
+        path: request_path,
+        query_params: query_params,
+        remote_ip: format_ip(remote_ip),
+        headers: headers,
+        body_raw: raw_body,
+        body_parsed: parse_body(raw_body, Map.get(headers, "content-type"))
+      }
 
-    parsed_body =
-      case {Map.get(headers, "content-type"), raw_body} do
-        {content_type, body} when is_binary(body) and byte_size(body) > 0 ->
-          cond do
-            String.contains?(content_type || "", "application/json") ->
-              case Jason.decode(body) do
-                {:ok, parsed} -> parsed
-                _ -> body
-              end
-
-            String.contains?(content_type || "", "multipart/form-data") ->
-              body_params
-
-            true ->
-              body
-          end
-
-        _ ->
-          body_params
-      end
-
-    request_info = %{
-      host: host,
-      method: method,
-      path: request_path,
-      query_params: query_params,
-      remote_ip: format_ip(remote_ip),
-      headers: headers,
-      body: parsed_body,
-      body_raw: raw_body
-    }
-
-    {:ok, request_info}
+      {:ok, request_info}
+    else
+      :error -> {:error, :body_not_captured}
+    end
   end
 
   def process_request(request_info, params) do
@@ -74,6 +65,45 @@ defmodule RequestBin.Requests do
         {:error, :bin_not_found}
     end
   end
+
+  defp parse_body("", _content_type), do: %{}
+
+  defp parse_body(body, content_type) when is_binary(body) do
+    case media_type(content_type) do
+      :json -> parse_json(body)
+      :urlencoded -> parse_urlencoded(body)
+      _other -> %{}
+    end
+  end
+
+  defp parse_json(body) do
+    case Jason.decode(body) do
+      {:ok, decoded} when is_map(decoded) -> decoded
+      {:ok, decoded} -> %{"_json" => decoded}
+      {:error, _reason} -> %{"_parse_error" => "invalid_json"}
+    end
+  end
+
+  defp parse_urlencoded(body) do
+    Plug.Conn.Query.decode(body)
+  rescue
+    _error -> %{"_parse_error" => "invalid_urlencoded"}
+  end
+
+  defp media_type(content_type) when is_binary(content_type) do
+    case Plug.Conn.Utils.content_type(content_type) do
+      {:ok, "application", "x-www-form-urlencoded", _params} ->
+        :urlencoded
+
+      {:ok, "application", subtype, _params} ->
+        if subtype == "json" or String.ends_with?(subtype, "+json"), do: :json, else: :other
+
+      _other ->
+        :other
+    end
+  end
+
+  defp media_type(_content_type), do: :other
 
   defp format_ip(ip) when is_tuple(ip), do: :inet.ntoa(ip) |> to_string()
   defp format_ip(ip) when is_binary(ip), do: ip
@@ -95,28 +125,8 @@ defmodule RequestBin.Requests do
   end
 
   def create_request(bin_id, request_info) do
-    formatted_body_raw =
-      case request_info.body_raw do
-        nil -> ""
-        body when is_binary(body) -> body
-        body -> inspect(body)
-      end
-
-    # Ensure body_parsed is properly formatted for storage
-    formatted_body_parsed =
-      case request_info.body do
-        body when is_map(body) ->
-          body
-
-        body when is_binary(body) and body != "" ->
-          case Jason.decode(body) do
-            {:ok, parsed} -> parsed
-            _ -> %{"raw" => body}
-          end
-
-        _ ->
-          %{}
-      end
+    body_raw = if is_binary(request_info.body_raw), do: request_info.body_raw, else: ""
+    body_parsed = if is_map(request_info.body_parsed), do: request_info.body_parsed, else: %{}
 
     result =
       RequestsRepo.create_request(%{
@@ -124,8 +134,8 @@ defmodule RequestBin.Requests do
         ip: request_info.remote_ip,
         headers: request_info.headers,
         method: request_info.method,
-        body_raw: formatted_body_raw,
-        body_parsed: formatted_body_parsed,
+        body_raw: body_raw,
+        body_parsed: body_parsed,
         query_params: request_info.query_params,
         bin_id: bin_id
       })

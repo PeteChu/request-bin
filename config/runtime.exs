@@ -39,6 +39,20 @@ config :request_bin, :client_ip,
   header: client_ip_header,
   trusted_proxy_cidrs: trusted_proxy_cidrs
 
+max_request_body_bytes =
+  case System.get_env("MAX_REQUEST_BODY_BYTES") do
+    nil ->
+      8_000_000
+
+    value ->
+      case Integer.parse(value) do
+        {limit, ""} when limit > 0 -> limit
+        _ -> raise ArgumentError, "MAX_REQUEST_BODY_BYTES must be a positive integer"
+      end
+  end
+
+config :request_bin, :request_capture, max_body_bytes: max_request_body_bytes
+
 if config_env() == :dev do
   # Reload browser tabs when matching files change.
   config :request_bin, RequestBinWeb.Endpoint,

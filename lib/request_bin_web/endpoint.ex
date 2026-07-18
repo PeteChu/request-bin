@@ -45,13 +45,20 @@ defmodule RequestBinWeb.Endpoint do
 
   plug RequestBinWeb.Plugs.TrustedClientIp
 
-  plug Plug.Parsers,
+  plug RequestBinWeb.Plugs.RequestCapture,
     parsers: [:urlencoded, :multipart, :json],
     pass: ["*/*"],
     json_decoder: Phoenix.json_library()
 
-  plug Plug.MethodOverride
+  plug :method_override
   plug Plug.Head
   plug Plug.Session, @session_options
   plug RequestBinWeb.Router
+
+  defp method_override(%Plug.Conn{private: %{request_bin_collector: true}} = conn, _opts),
+    do: conn
+
+  defp method_override(conn, _opts) do
+    Plug.MethodOverride.call(conn, Plug.MethodOverride.init([]))
+  end
 end
