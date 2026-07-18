@@ -17,6 +17,9 @@ defmodule RequestBin.Bins.Bin do
   def changeset(bin, attrs) do
     bin
     |> cast(attrs, [:retention_period])
-    |> validate_required([])
+    |> validate_required([:retention_period])
+    |> validate_number(:retention_period, greater_than: 0, less_than_or_equal_to: 365)
+    |> check_constraint(:retention_period, name: :retention_period_must_be_positive)
+    |> check_constraint(:retention_period, name: :retention_period_must_be_less_than_a_year)
   end
 end

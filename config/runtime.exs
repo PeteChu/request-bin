@@ -53,6 +53,17 @@ max_request_body_bytes =
 
 config :request_bin, :request_capture, max_body_bytes: max_request_body_bytes
 
+retention_period_days =
+  case Integer.parse(System.get_env("RETENTION_PERIOD", "2")) do
+    {days, ""} when days in 1..365 ->
+      days
+
+    _other ->
+      raise ArgumentError, "RETENTION_PERIOD must be an integer from 1 to 365"
+  end
+
+config :request_bin, :retention_period_days, retention_period_days
+
 if config_env() == :dev do
   # Reload browser tabs when matching files change.
   config :request_bin, RequestBinWeb.Endpoint,

@@ -1,6 +1,6 @@
 defmodule RequestBin.ObanJobs.DeleteBinJob do
   alias RequestBin.Bins.Bin
-  use Oban.Worker, queue: :default, max_attempts: 3
+  use Oban.Worker, queue: :default, max_attempts: 20
 
   alias RequestBin.Repo
   alias RequestBin.Requests
@@ -12,9 +12,14 @@ defmodule RequestBin.ObanJobs.DeleteBinJob do
     Repo.transaction(fn ->
       Requests.delete_for_bin(bin_id)
 
-      Repo.get!(Bin, bin_id) |> Repo.delete()
+      case Repo.get(Bin, bin_id) do
+        nil -> :ok
+        bin -> Repo.delete!(bin)
+      end
     end)
-
-    :ok
+    |> case do
+      {:ok, _result} -> :ok
+      {:error, reason} -> {:error, reason}
+    end
   end
 end

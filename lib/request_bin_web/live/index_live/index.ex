@@ -81,16 +81,19 @@ defmodule RequestBinWeb.BinLive.Index do
   end
 
   def handle_event("create_bin", _value, socket) do
-    {:ok, bin} = Bins.create_and_schedule_bin()
-    expires_at = DateTime.add(bin.inserted_at, bin.retention_period, :hour)
+    case Bins.create_and_schedule_bin() do
+      {:ok, bin} ->
+        bin_data = %{
+          id: bin.id,
+          expires_at: bin |> Bins.expires_at() |> DateTime.to_iso8601()
+        }
 
-    bin_data = %{
-      id: bin.id,
-      expires_at: DateTime.to_iso8601(expires_at)
-    }
+        socket = push_event(socket, "store_bin", %{bin: bin_data})
+        {:noreply, push_navigate(socket, to: ~p"/bin/#{bin.id}/inspect")}
 
-    socket = push_event(socket, "store_bin", %{bin: bin_data})
-    {:noreply, push_navigate(socket, to: ~p"/bin/#{bin.id}/inspect")}
+      {:error, _reason} ->
+        {:noreply, put_flash(socket, :error, "Could not create a request bin. Please try again.")}
+    end
   end
 
   def handle_event("load_bins", %{"bins" => bins}, socket) do

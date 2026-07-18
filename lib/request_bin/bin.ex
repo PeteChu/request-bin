@@ -1,27 +1,32 @@
 defmodule RequestBin.Bins do
-  alias RequestBin.BinsRepo
+  alias Ecto.Multi
+  alias RequestBin.Bins.Bin
   alias RequestBin.ObanJobs.DeleteBinJob
+  alias RequestBin.Repo
 
-  def create_and_schedule_bin() do
-    {:ok, bin} = BinsRepo.create_bin()
+  def create_and_schedule_bin do
+    retention_period_days =
+      Application.fetch_env!(:request_bin, :retention_period_days)
 
-    retention_period = String.to_integer(System.get_env("RETENTION_PERIOD") || "2")
-
-    remove_time =
-      DateTime.utc_now()
-      |> DateTime.add(
-        retention_period * 24,
-        :hour
-      )
-
-    Oban.insert!(
-      Oban.Job.new(%{bin_id: bin.id},
-        worker: DeleteBinJob,
-        scheduled_at: remove_time,
+    Multi.new()
+    |> Multi.insert(
+      :bin,
+      Bin.changeset(%Bin{}, %{retention_period: retention_period_days})
+    )
+    |> Oban.insert(:delete_job, fn %{bin: bin} ->
+      DeleteBinJob.new(%{bin_id: bin.id},
+        scheduled_at: expires_at(bin),
         queue: :default
       )
-    )
+    end)
+    |> Repo.transaction()
+    |> case do
+      {:ok, %{bin: bin, delete_job: _job}} -> {:ok, bin}
+      {:error, _operation, reason, _changes} -> {:error, reason}
+    end
+  end
 
-    {:ok, bin}
+  def expires_at(%Bin{} = bin) do
+    DateTime.add(bin.inserted_at, bin.retention_period * 86_400, :second)
   end
 end
