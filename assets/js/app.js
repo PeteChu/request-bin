@@ -27,6 +27,7 @@ import topbar from "../vendor/topbar";
 import Bins from "./hooks/bins";
 import LocalTime from "./hooks/local_time";
 import CopyOnFocus from "./hooks/copy-on-focus";
+import CopyOnClick from "./hooks/copy-on-click";
 
 const csrfToken = document
   .querySelector("meta[name='csrf-token']")
@@ -39,6 +40,7 @@ const liveSocket = new LiveSocket("/live", Socket, {
     Bins,
     LocalTime,
     CopyOnFocus,
+    CopyOnClick,
   },
 });
 
