@@ -11,6 +11,9 @@ defmodule RequestBin.Application do
     Oban.Telemetry.attach_default_logger()
 
     children = [
+      {Ecto.Migrator,
+       repos: Application.fetch_env!(:request_bin, :ecto_repos),
+       skip: System.get_env("SKIP_MIGRATIONS") == "true"},
       RequestBinWeb.Telemetry,
       RequestBin.Repo,
       {Oban, Application.fetch_env!(:request_bin, Oban)},
